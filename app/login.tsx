@@ -1,4 +1,6 @@
 import { Redirect, useRouter } from "expo-router";
+import * as AsyncStorage from "expo-secure-store";
+import * as SecureStore from "expo-secure-store";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -15,17 +17,29 @@ export default function Login() {
             method: "POST",
             body: JSON.stringify({
                 username: "devtoprod",
-                password: "12345"
+                password: "1234"
             })
         });
         const status = apiFetch.status;
         const response = await apiFetch.json();
 
-        console.log(response);
+        console.log(response, status);
 
-        if( status !== 200 ){
+        if( status >= 400 ){
             return Alert.alert("Login Error", response?.message);
         }
+
+        await Promise.all([
+            SecureStore.setItemAsync('accessToken', response.accessToken),
+            SecureStore.setItemAsync('refreshToken', response.refreshToken),
+            AsyncStorage.setItem('user', JSON.stringify(response.user)),
+        ])
+        .then(() => {
+            router.push('/(tabs)');
+        })
+        .catch((error) => {
+            console.log(error);
+        });
 
     }
 

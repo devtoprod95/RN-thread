@@ -24,7 +24,9 @@ window.server = createServer({
                     accessToken: "access-token",
                     refreshToken: "refresh-token",
                     user: {
-                        id: "devtoprod"
+                        id: "devtoprod",
+                        name: "devtoproduction",
+                        description: "은둔형 개발자"
                     }
                 }
             } else {
