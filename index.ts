@@ -26,7 +26,8 @@ window.server = createServer({
                     user: {
                         id: "devtoprod",
                         name: "devtoproduction",
-                        description: "은둔형 개발자"
+                        description: "은둔형 개발자",
+                        profileImageUrl: "https://avatars.githubusercontent.com/u/58979877?u=7850603ed60100479b98b2a5ec1cfc9d3e092a03&v=4"
                     }
                 }
             } else {
