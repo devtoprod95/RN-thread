@@ -37,8 +37,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
   const handleLogout = () => {
     logout?.();
     onClose();
-  
-    // 라우터 스택 초기화
+
     router.dismissAll();
     router.replace('/home');
   };

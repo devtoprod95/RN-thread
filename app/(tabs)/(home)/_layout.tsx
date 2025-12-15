@@ -1,114 +1,193 @@
 import { AuthContext } from "@/app/_layout";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
-import { Slot, useRouter } from "expo-router";
+import {
+    type MaterialTopTabNavigationEventMap,
+    type MaterialTopTabNavigationOptions,
+    createMaterialTopTabNavigator,
+} from "@react-navigation/material-top-tabs";
+import type {
+    ParamListBase,
+    TabNavigationState,
+} from "@react-navigation/native";
+import { BlurView } from "expo-blur";
+import { Slot, router, withLayoutContext } from "expo-router";
 import { useContext, useState } from "react";
-import { Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    useColorScheme
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaterialTopTabs } from "../[username]/_layout";
+const { Navigator } = createMaterialTopTabNavigator();
+
+export const MaterialTopTabs = withLayoutContext<
+  MaterialTopTabNavigationOptions,
+  typeof Navigator,
+  TabNavigationState<ParamListBase>,
+  MaterialTopTabNavigationEventMap
+>(Navigator);
 
 export default function TabLayout() {
-    const router = useRouter();
-    const insets = useSafeAreaInsets();
-    const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
-    const { user } = useContext(AuthContext);
-    const isLoggedIn = !!user;
+  const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const { user } = useContext(AuthContext);
+  const isLoggedIn = !!user;
 
-    return (
-        <View
+  return (
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+        colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+      ]}
+    >
+      <BlurView
         style={[
-            styles.container,
-            { paddingTop: insets.top, paddingBottom: insets.bottom },
+          styles.header,
+          colorScheme === "dark" ? styles.headerDark : styles.headerLight,
         ]}
-        >
-        <View style={styles.header}>
-            {isLoggedIn && (
-            <Pressable
-                style={styles.menuButton}
-                onPress={() => {
-                setIsSideMenuOpen(true);
-                }}
-            >
-                <Ionicons name="menu" size={24} color="black" />
-            </Pressable>
-            )}
-            <SideMenu
-            isVisible={isSideMenuOpen}
-            onClose={() => setIsSideMenuOpen(false)}
+        intensity={colorScheme === "dark" ? 5 : 70}
+      >
+        {isLoggedIn && (
+          <Pressable
+            style={styles.menuButton}
+            onPress={() => {
+              setIsSideMenuOpen(true);
+            }}
+          >
+            <Ionicons
+              name="menu"
+              size={24}
+              color={colorScheme === "dark" ? "gray" : "black"}
             />
-            <Image style={styles.headerLogo} source={require("@/assets/images/react-logo.png")} />
-            {!isLoggedIn && (
-            <TouchableOpacity
-                onPress={() => router.navigate('/login')}
-                style={styles.loginButton}
-            >
-                <Text style={styles.loginButtonText}>로그인</Text>
-            </TouchableOpacity>
-            )}
-        </View>
-        {isLoggedIn ? (
-            <MaterialTopTabs
-                screenOptions={{
-                lazy: true,
-                tabBarStyle: {
-                    backgroundColor: "white",
-                    shadowColor: "transparent",
-                    position: "relative",
-                },
-                tabBarPressColor: "transparent",
-                tabBarActiveTintColor: "#555",
-                tabBarIndicatorStyle: {
-                    backgroundColor: "black",
-                    height: 1,
-                },
-                tabBarIndicatorContainerStyle: {
-                    backgroundColor: "#aaa",
-                    position: "absolute",
-                    top: 48,
-                    height: 1,
-                },
-                }}
-            >
-                <MaterialTopTabs.Screen name="index" options={{ title: "Threads" }} />
-                <MaterialTopTabs.Screen name="replies" options={{ title: "Replies" }} />
-            </MaterialTopTabs>
-        ) : (
-            <Slot/>
+          </Pressable>
         )}
-        </View>
-    );
+        <SideMenu
+          isVisible={isSideMenuOpen}
+          onClose={() => setIsSideMenuOpen(false)}
+        />
+        <Image
+          source={require("../../../assets/images/react-logo.png")}
+          style={styles.headerLogo}
+        />
+        {!isLoggedIn && (
+          <TouchableOpacity
+            style={[
+              styles.loginButton,
+              colorScheme === "dark"
+                ? styles.loginButtonDark
+                : styles.loginButtonLight,
+            ]}
+            onPress={() => {
+              console.log("loginButton onPress");
+              router.navigate(`/login`);
+            }}
+          >
+            <Text
+              style={
+                colorScheme === "dark"
+                  ? styles.loginButtonTextDark
+                  : styles.loginButtonTextLight
+              }
+            >
+              로그인
+            </Text>
+          </TouchableOpacity>
+        )}
+      </BlurView>
+      {isLoggedIn ? (
+        <MaterialTopTabs
+          screenOptions={{
+            lazy: true,
+            tabBarStyle: {
+              backgroundColor: colorScheme === "dark" ? "#101010" : "white",
+              shadowColor: "transparent",
+              position: "relative",
+            },
+            tabBarLabelStyle: {
+              fontSize: 16,
+              fontWeight: "bold",
+            },
+            tabBarPressColor: "transparent",
+            tabBarActiveTintColor: colorScheme === "dark" ? "white" : "#555",
+            tabBarIndicatorStyle: {
+              backgroundColor: colorScheme === "dark" ? "white" : "black",
+              height: 1,
+            },
+            tabBarIndicatorContainerStyle: {
+              backgroundColor: colorScheme === "dark" ? "#aaa" : "#555",
+              position: "absolute",
+              top: 49,
+              height: 1,
+            },
+          }}
+        >
+          <MaterialTopTabs.Screen name="index" options={{ title: "For You" }} />
+          <MaterialTopTabs.Screen
+            name="following"
+            options={{ title: "Following" }}
+          />
+        </MaterialTopTabs>
+      ) : (
+        <Slot />
+      )}
+    </View>
+  );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  containerLight: {
+    backgroundColor: "white",
+  },
+  containerDark: {
+    backgroundColor: "#101010",
   },
   header: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 16,
+    height: 50,
   },
-  headerLogo: {
-    width: 42,
-    height: 42
+  headerLight: {
+    backgroundColor: "white",
   },
-  loginButton: {
-    position: "absolute",
-    right: 20,
-    top: 0,
-    backgroundColor: "black",
-    borderWidth: 1,
-    borderColor: "black",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  loginButtonText: {
-    color: "white"
+  headerDark: {
+    backgroundColor: "#101010",
   },
   menuButton: {
     position: "absolute",
-    left: 20,
-    top: 10
+    left: 16,
+  },
+  headerLogo: {
+    width: 32,
+    height: 32,
+  },
+  loginButton: {
+    padding: 8,
+    borderRadius: 4,
+    position: "absolute",
+    right: 16,
+  },
+  loginButtonLight: {
+    backgroundColor: "black",
+  },
+  loginButtonDark: {
+    backgroundColor: "white",
+  },
+  loginButtonTextLight: {
+    color: "white",
+  },
+  loginButtonTextDark: {
+    color: "black",
   },
 });
