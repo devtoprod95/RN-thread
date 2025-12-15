@@ -24,8 +24,8 @@ window.server = createServer({
                     accessToken: "access-token",
                     refreshToken: "refresh-token",
                     user: {
-                        id: "devtoprod",
-                        name: "devtoproduction",
+                        id: "@devtoprod95",
+                        name: "devtoprod",
                         description: "은둔형 개발자",
                         profileImageUrl: "https://avatars.githubusercontent.com/u/58979877?u=7850603ed60100479b98b2a5ec1cfc9d3e092a03&v=4"
                     }

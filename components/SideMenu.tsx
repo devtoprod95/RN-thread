@@ -1,16 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur"; // For background blur effect
+import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import {
-    Appearance,
-    Modal,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    useColorScheme,
-    View,
+  Appearance,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
 } from "react-native";
 import { AuthContext } from "../app/_layout";
 
@@ -21,6 +22,7 @@ interface SideMenuProps {
 
 const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
   const { logout } = useContext(AuthContext);
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const [isAppearanceVisible, setIsAppearanceVisible] = useState(false);
 
@@ -34,9 +36,11 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
 
   const handleLogout = () => {
     logout?.();
-    onClose(); // Close the menu after logout
-    // Optionally navigate to login screen or home screen
-    // e.g., using router.replace('/login');
+    onClose();
+  
+    // 라우터 스택 초기화
+    router.dismissAll();
+    router.replace('/home');
   };
 
   // Use Modal for better presentation and handling outside clicks
