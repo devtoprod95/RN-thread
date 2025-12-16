@@ -16,6 +16,7 @@ import { useContext, useState } from "react";
 import {
   Image,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -39,6 +40,7 @@ export default function TabLayout() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const isLoggedIn = !!user;
   const { username } = useLocalSearchParams();
+
   const isOwnProfile = isLoggedIn && user?.id === username?.slice(1);
 
   const handleOpenEditModal = () => {
@@ -47,8 +49,17 @@ export default function TabLayout() {
 
   const handleCloseEditModal = () => setIsEditModalVisible(false);
 
-  const handleShareProfile = () => {
-    console.log("share profile");
+  const handleShareProfile = async() => {
+    try {
+      const message = `threadsc://${username}`
+      await Share.share({
+        message,
+      });
+
+      console.log("message", message);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

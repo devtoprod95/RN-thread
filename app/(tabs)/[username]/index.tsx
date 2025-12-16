@@ -13,7 +13,7 @@ import {
 export default function Index() {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
-  console.log(pathname);
+  console.log("pathname", pathname);
   const { user } = useContext(AuthContext);
 
   return (
@@ -23,7 +23,7 @@ export default function Index() {
         colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
-      {pathname === "/undefined" && (
+      {pathname !== "/undefined" && (
         <View style={styles.postInputContainer}>
           <Image
             source={{ uri: user?.profileImageUrl }}

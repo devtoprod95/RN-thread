@@ -3,13 +3,13 @@ import { type BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 import { Tabs, useRouter } from "expo-router";
 import { useContext, useRef, useState } from "react";
 import {
-    Animated,
-    Modal,
-    Pressable,
-    Text,
-    TouchableOpacity,
-    useColorScheme,
-    View,
+  Animated,
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
 } from "react-native";
 import { AuthContext } from "../_layout";
 
@@ -196,6 +196,9 @@ export default function TabLayout() {
           }}
           options={{
             tabBarLabel: () => null,
+            href: isLoggedIn 
+            ? `/${user.id}`
+            : undefined,
             tabBarIcon: ({ focused }) => (
               <Ionicons
                 name="person-outline"
