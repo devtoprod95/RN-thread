@@ -38,7 +38,9 @@ const SideMenu: React.FC<SideMenuProps> = ({ isVisible, onClose }) => {
     logout?.();
     onClose();
 
-    router.dismissAll();
+    if (router.canGoBack()) {
+      router.dismissAll();
+    }
     router.replace('/home');
   };
 
