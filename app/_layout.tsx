@@ -52,7 +52,7 @@ export function AnimatedAppLoader({ children, image }: { children: React.ReactNo
     const apiFetch = await fetch("/login", {
       method: "POST",
       body: JSON.stringify({
-          username: "devtoprod",
+          username: "zerohch0",
           password: "1234"
       })
     });
