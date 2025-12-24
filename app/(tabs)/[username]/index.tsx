@@ -13,7 +13,7 @@ import {
 export default function Index() {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
-  console.log("pathname", pathname);
+
   const { user } = useContext(AuthContext);
 
   return (

@@ -1,88 +1,56 @@
-import Post from "@/components/Post";
-import { useRouter } from "expo-router";
+import Post, { type Post as PostType } from "@/components/Post";
+import { FlashList } from "@shopify/flash-list";
+import { usePathname, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  ScrollView,
   StyleSheet,
-  useColorScheme
+  useColorScheme,
+  View
 } from "react-native";
 export default function Index() {
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const pathname = usePathname();
+  const [posts, setPosts] = useState<PostType[]>([]);
+
+  console.log("pathname2", pathname);
+
+  useEffect(() => {
+    setPosts([]);
+
+    fetch(`/posts?type=${pathname.split("/").pop()}`, {})
+    .then((res) => res.json())
+    .then((data) => {
+      setPosts(data.posts);
+    });
+  }, [pathname]);
+
+  const onEndReached = () => {
+    if( posts.length > 0 ){
+      fetch(`/posts?type=${pathname.split("/").pop()}&cursor=${posts.at(-1)?.id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if( data.posts.length > 0 ){
+          setPosts((prev) => [...prev, ...data.posts]);
+        }
+      })
+    }
+  }
 
   return (
-    <ScrollView
-      nestedScrollEnabled
+    <View
       style={[
         styles.container,
         colorScheme === "dark" ? styles.containerDark : styles.containerLight,
       ]}
     >
-      <Post
-        item={{
-          id: "0",
-          username: "madison",
-          displayName: "Madison",
-          content: "What is this?",
-          timeAgo: "30 minutes ago",
-          likes: 10,
-          comments: 5,
-          reposts: 2,
-          isVerified: true,
-          avatar: "https://randomuser.me/api/portraits/men/2.jpg",
-          images: [`https://picsum.photos/800/600?random=${Math.random()}`],
-          location: [37.125, 124.97],
-        }}
+      <FlashList
+        data={posts}
+        renderItem={({ item }) => <Post item={item} />}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={2}
       />
-      <Post
-        item={{
-          id: "1",
-          username: "zerocho",
-          displayName: "Zerocho",
-          content: "My website is ZeroCho.com",
-          timeAgo: "1 hour ago",
-          likes: 10,
-          comments: 5,
-          reposts: 2,
-          link: "https://www.zerocho.com",
-          linkThumbnail: "https://www.zerocho.com/favicon.png",
-          isVerified: true,
-          avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-        }}
-      />
-      <Post
-        item={{
-          id: "2",
-          username: "zerocho",
-          displayName: "Zerocho",
-          content: "Hello, world!",
-          timeAgo: "1 hour ago",
-          likes: 10,
-          comments: 5,
-          reposts: 2,
-          isVerified: true,
-          avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-        }}
-      />
-      <Post
-        item={{
-          id: "3",
-          username: "karina",
-          displayName: "Karina",
-          content: "Hello, world!",
-          timeAgo: "1 hour ago",
-          likes: 10,
-          comments: 5,
-          reposts: 2,
-          isVerified: true,
-          avatar: "https://randomuser.me/api/portraits/women/3.jpg",
-          images: [
-            `https://picsum.photos/800/600?random=${Math.random()}`,
-            `https://picsum.photos/800/600?random=${Math.random()}`,
-          ],
-          location: [37.125, 124.97],
-        }}
-      />
-    </ScrollView>
+    </View>
   );
 }
 
