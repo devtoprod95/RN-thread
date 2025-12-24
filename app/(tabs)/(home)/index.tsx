@@ -13,29 +13,24 @@ export default function Index() {
   const pathname = usePathname();
   const [posts, setPosts] = useState<PostType[]>([]);
 
-  console.log("pathname2", pathname);
-
   useEffect(() => {
-    setPosts([]);
-
-    fetch(`/posts?type=${pathname.split("/").pop()}`, {})
+    fetch(`/posts`)
     .then((res) => res.json())
     .then((data) => {
       setPosts(data.posts);
     });
-  }, [pathname]);
+  }, []);
 
   const onEndReached = () => {
-    if( posts.length > 0 ){
-      fetch(`/posts?type=${pathname.split("/").pop()}&cursor=${posts.at(-1)?.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if( data.posts.length > 0 ){
-          setPosts((prev) => [...prev, ...data.posts]);
-        }
-      })
-    }
-  }
+    console.log(`${pathname} onEndReached`);
+    fetch(`/posts?cursor=${posts.at(-1)?.id}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if( data.posts.length > 0 ){
+        setPosts((prev) => [...prev, ...data.posts]);
+      }
+    })
+  };
 
   return (
     <View
@@ -48,7 +43,8 @@ export default function Index() {
         data={posts}
         renderItem={({ item }) => <Post item={item} />}
         onEndReached={onEndReached}
-        onEndReachedThreshold={2}
+        onEndReachedThreshold={0.5}
+        ListEmptyComponent={() => <View style={{ height: 1 }} />}
       />
     </View>
   );

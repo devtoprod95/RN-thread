@@ -2,25 +2,25 @@ import { AuthContext } from "@/app/_layout";
 import SideMenu from "@/components/SideMenu";
 import { Ionicons } from "@expo/vector-icons";
 import {
-    type MaterialTopTabNavigationEventMap,
-    type MaterialTopTabNavigationOptions,
-    createMaterialTopTabNavigator,
+  type MaterialTopTabNavigationEventMap,
+  type MaterialTopTabNavigationOptions,
+  createMaterialTopTabNavigator,
 } from "@react-navigation/material-top-tabs";
 import type {
-    ParamListBase,
-    TabNavigationState,
+  ParamListBase,
+  TabNavigationState,
 } from "@react-navigation/native";
 import { BlurView } from "expo-blur";
 import { Slot, router, withLayoutContext } from "expo-router";
 import { useContext, useState } from "react";
 import {
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    useColorScheme
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useColorScheme
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { Navigator } = createMaterialTopTabNavigator();
@@ -105,6 +105,7 @@ export default function TabLayout() {
         <MaterialTopTabs
           screenOptions={{
             lazy: true,
+            lazyPreloadDistance: 1,
             tabBarStyle: {
               backgroundColor: colorScheme === "dark" ? "#101010" : "white",
               shadowColor: "transparent",

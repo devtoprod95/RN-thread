@@ -11,7 +11,6 @@ import {
   RestSerializer,
   Server,
 } from "miragejs";
-import { type User } from "./app/_layout";
 
 declare global {
   interface Window {
@@ -19,7 +18,7 @@ declare global {
   }
 }
 
-let zerocho: User;
+let zerocho: any;
 
 if (__DEV__) {
   if (window.server) {
@@ -74,13 +73,15 @@ if (__DEV__) {
     },
     seeds(server) {
       zerocho = server.create("user", {
-        id: "zerohch0",
+        id: "zerocho0",
         name: "ZeroCho",
         description: "🐢 lover, programmer, youtuber",
         profileImageUrl: "https://avatars.githubusercontent.com/u/885857?v=4",
       });
+
       const users = server.createList("user", 10);
-      users.forEach((user) => {
+      const allUsers = [...users, zerocho];
+      allUsers.forEach((user) => {
         server.createList("post", 5, {
           user,
         });
@@ -94,15 +95,18 @@ if (__DEV__) {
             content: post.content,
             imageUrls: post.imageUrls,
             location: post.location,
-            user: schema.find("user", "zerohch0"),
+            user: schema.find("user", "zerocho0"),
           });
         });
         return new Response(200, {}, { posts });
       });
 
       this.get("/posts", (schema, request) => {
-        const posts = schema.all('post');
+        let posts = schema.all('post');
         let targetIndex = -1;
+        if( request.queryParams.type === "following" ){
+          posts = posts.filter((post) => post.user?.id === zerocho.id);
+        }
         if(request.queryParams.cursor){
           targetIndex = posts.models.findIndex((v) => v.id === request.queryParams.cursor);
         }
@@ -123,7 +127,7 @@ if (__DEV__) {
             accessToken: "access-token",
             refreshToken: "refresh-token",
             user: {
-              id: "zerohch0",
+              id: "zerocho0",
               name: "ZeroCho",
               description: "🐢 lover, programmer, youtuber",
               profileImageUrl:
