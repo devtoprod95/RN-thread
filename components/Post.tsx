@@ -57,7 +57,6 @@ export default function Post({ item }: { item: Post }) {
 
   // 게시글 클릭 핸들러 수정
   const handlePostPress = (post: Post) => {
-    console.log("postClick");
     // DetailedPost 타입에 맞게 데이터 변환 (isLiked, shares는 상세 화면에서 관리)
     const detailedPost: DetailedPost = {
       ...post,
