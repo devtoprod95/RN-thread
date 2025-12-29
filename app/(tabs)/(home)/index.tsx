@@ -1,5 +1,6 @@
 import Post, { type Post as PostType } from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
+import * as Haptics from "expo-haptics";
 import { usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -12,6 +13,7 @@ export default function Index() {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
   const [posts, setPosts] = useState<PostType[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetch(`/posts`)
@@ -32,6 +34,21 @@ export default function Index() {
     })
   };
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    setPosts([]);
+    // 진동
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    fetch(`/posts`)
+    .then((res) => res.json())
+    .then((data) => {
+      setPosts(data.posts);
+    })
+    .finally(() => {
+      setRefreshing(false);
+    })
+  }
+
   return (
     <View
       style={[
@@ -41,6 +58,8 @@ export default function Index() {
     >
       <FlashList
         data={posts}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => <Post item={item} />}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
