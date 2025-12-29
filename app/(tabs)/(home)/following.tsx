@@ -1,5 +1,6 @@
 import Post, { type Post as PostType } from "@/components/Post";
 import { FlashList } from "@shopify/flash-list";
+import * as Haptics from "expo-haptics";
 import { usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -8,41 +9,59 @@ import {
     View
 } from "react-native";
 export default function Following() {
-  const router = useRouter();
-  const colorScheme = useColorScheme();
-  const pathname = usePathname();
-  const [posts, setPosts] = useState<PostType[]>([]);
+    const router = useRouter();
+    const colorScheme = useColorScheme();
+    const pathname = usePathname();
+    const [posts, setPosts] = useState<PostType[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetch(`/posts?type=following`)
-    .then((res) => res.json())
-    .then((data) => {
-      setPosts(data.posts);
-    });
-  }, []);
+    useEffect(() => {
+        fetch(`/posts?type=following`)
+        .then((res) => res.json())
+        .then((data) => {
+            setPosts(data.posts);
+        });
+    }, []);
 
-  const onEndReached = () => {
-    console.log(`${pathname} onEndReached`);
-    if( posts.length > 0 ){
-      fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if( data.posts.length > 0 ){
-          setPosts((prev) => [...prev, ...data.posts]);
+    const onEndReached = () => {
+        console.log(`${pathname} onEndReached`);
+        if( posts.length > 0 ){
+            fetch(`/posts?type=following&cursor=${posts.at(-1)?.id}`)
+            .then((res) => res.json())
+            .then((data) => {
+            if( data.posts.length > 0 ){
+                setPosts((prev) => [...prev, ...data.posts]);
+            }
+            })
         }
-      })
     }
-  }
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        setPosts([]);
+        // 진동
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        fetch(`/posts?type=following`)
+        .then((res) => res.json())
+        .then((data) => {
+            setPosts(data.posts);
+        })
+        .finally(() => {
+            setRefreshing(false);
+        })
+    }
 
   return (
     <View
-      style={[
-        styles.container,
-        colorScheme === "dark" ? styles.containerDark : styles.containerLight,
-      ]}
+        style={[
+            styles.container,
+            colorScheme === "dark" ? styles.containerDark : styles.containerLight,
+        ]}
     >
       <FlashList
         data={posts}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => <Post item={item} />}
         onEndReached={onEndReached}
         onEndReachedThreshold={2}
