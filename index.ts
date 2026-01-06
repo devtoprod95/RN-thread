@@ -64,7 +64,7 @@ if (__DEV__) {
         content: () => faker.lorem.paragraph(),
         imageUrls: () =>
           Array.from({ length: Math.floor(Math.random() * 3) }, () =>
-            faker.image.url()
+            faker.image.urlLoremFlickr({ category: "nature" })
           ),
         likes: () => Math.floor(Math.random() * 100),
         comments: () => Math.floor(Math.random() * 100),
@@ -73,50 +73,112 @@ if (__DEV__) {
     },
     seeds(server) {
       zerocho = server.create("user", {
-        id: "zerocho0",
+        id: "zerohch0",
         name: "ZeroCho",
         description: "🐢 lover, programmer, youtuber",
         profileImageUrl: "https://avatars.githubusercontent.com/u/885857?v=4",
       });
-
       const users = server.createList("user", 10);
-      const allUsers = [...users, zerocho];
-      allUsers.forEach((user) => {
+      users.forEach((user) => {
         server.createList("post", 5, {
           user,
         });
       });
+      server.createList("post", 5, {
+        user: zerocho,
+      });
     },
     routes() {
-      this.post("/posts", (schema, request) => {
-        const { posts } = JSON.parse(request.requestBody);
+      this.post("/posts", async (schema, request) => {
+        const formData = request.requestBody as unknown as FormData;
+        const posts: Record<string, string | string[]>[] = [];
+        formData.forEach(async (value, key) => {
+          const match = key.match(/posts\[(\d+)\]\[(\w+)\](\[(\d+)\])?$/);
+
+          if (match) {
+            const [_, index, field, , imageIndex] = match;
+            const i = parseInt(index);
+            const imgI = parseInt(imageIndex);
+            if (!posts[i]) {
+              posts[i] = {};
+            }
+            if (field === "imageUrls") {
+              if (!posts[i].imageUrls) {
+                posts[i].imageUrls = [] as string[];
+              }
+              (posts[i].imageUrls as string[])[imgI] = (
+                value as unknown as { uri: string }
+              ).uri;
+            } else if (field === "location") {
+              posts[i].location = JSON.parse(value as string);
+            } else {
+              posts[i][field] = value as string;
+            }
+          }
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         posts.forEach((post: any) => {
           schema.create("post", {
+            id: post.id,
             content: post.content,
             imageUrls: post.imageUrls,
             location: post.location,
-            user: schema.find("user", "zerocho0"),
+            user: schema.find("user", zerocho?.id as any),
           });
         });
-        return new Response(200, {}, { posts });
+        return posts;
       });
 
       this.get("/posts", (schema, request) => {
-        let posts = schema.all('post');
+        let posts = schema.all("post");
+        if (request.queryParams.type === "following") {
+          posts = posts.filter((post) => post.user?.id === zerocho?.id);
+        }
         let targetIndex = -1;
-        if( request.queryParams.type === "following" ){
-          posts = posts.filter((post) => post.user?.id === zerocho.id);
+        if (request.queryParams.cursor) {
+          targetIndex = posts.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
         }
-        if(request.queryParams.cursor){
-          targetIndex = posts.models.findIndex((v) => v.id === request.queryParams.cursor);
-        }
-        return posts.slice(targetIndex + 1, targetIndex + 11);
+        return posts
+          .sort((a, b) => parseInt(b.id) - parseInt(a.id))
+          .slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.get("/posts/:id", (schema, request) => {
-        const post = schema.find("post", request.params.id);
-        const comments = schema.all("post").slice(0, 10);
-        return { post, comments };
+        return schema.find("post", request.params.id);
+      });
+      this.get("/posts/:id/comments", (schema, request) => {
+        const comments = schema.all("post");
+        let targetIndex = -1;
+        if (request.queryParams.cursor) {
+          targetIndex = comments.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
+        }
+        return comments
+          .sort((a, b) => parseInt(b.id) - parseInt(a.id))
+          .slice(targetIndex + 1, targetIndex + 11);
+      });
+      this.get("/users/:id", (schema, request) => {
+        return schema.find("user", request.params.id.slice(1));
+      });
+
+      this.get("/users/:id/:type", (schema, request) => {
+        let posts = schema.all("post");
+        if (request.params.type === "threads") {
+          posts = posts.filter((post) => post.user?.id === request.params.id);
+        } else if (request.params.type === "reposts") {
+          posts = posts.filter((post) => post.user?.id !== request.params.id);
+        }
+        let targetIndex = -1;
+        if (request.queryParams.cursor) {
+          targetIndex = posts.models.findIndex(
+            (v) => v.id === request.queryParams.cursor
+          );
+        }
+        return posts.slice(targetIndex + 1, targetIndex + 11);
       });
 
       this.post("/login", (schema, request) => {
@@ -127,7 +189,7 @@ if (__DEV__) {
             accessToken: "access-token",
             refreshToken: "refresh-token",
             user: {
-              id: "zerocho0",
+              id: "zerohch0",
               name: "ZeroCho",
               description: "🐢 lover, programmer, youtuber",
               profileImageUrl:
